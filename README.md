@@ -3,7 +3,7 @@
 ## Overview
 The **Color-Test API** provides a real-time endpoint for external marketplaces to retrieve the latest color state of specific Bitcoin ordinals. This API is part of a proof-of-concept (POC) system for the upcoming **Pizza Pets Game**. Color-Test showcases how ordinals evolve with every new Bitcoin block, offering dynamic properties that can be visualized in collections based on their color (Red, Green, or Blue). 
 
-In the POC, each ordinal's color updates when a new block is generated, cycling among red, green, and blue based on the algorithm in the **ColorTest** module. The color calculation is tied to a combination of each ordinal's unique inscription ID, its position in the collection, and the current block height:
+In the POC, each ordinal's color updates when a new block is generated, cycling among red, green, and blue based on the algorithm in the [ColorTest](https://ordin-delta.vercel.app/content/a43a4445b4272b06f2ab91c50996ceb0aa24ad956859f9d8bb17e99b4908a63ci0) module. The color calculation is tied to a combination of each ordinal's unique inscription ID, its position in the collection, and the current block height:
 
 ```javascript
 async update() {
