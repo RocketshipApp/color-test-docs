@@ -123,4 +123,5 @@ fetchCollection('red')
 - **Error Handling**: Implement error handling for cases where the response might not be `200 OK`.
 - **Pagination**: If `last_page` is `false`, implement pagination to retrieve additional pages if necessary.
 
-This completes the Color-Test API documentation, enabling developers to integrate and maintain real-time, synchronized ordinal collections effectively.
+
+Documentation for the production Pizza Pets Collection API will be completed soon.
