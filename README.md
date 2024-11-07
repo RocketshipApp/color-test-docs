@@ -22,12 +22,20 @@ This mechanism ensures ordinals continuously update and change over time, aligni
 ## API Endpoints
 
 ### Collection API Endpoints
-The Color-Test Collection API provides three endpoints for querying collections of ordinals based on their current color. Each request fetches the list of ordinals for a specified color, including details like `blockheight` and `thumbnail_url` for easy visual integration.
+The Color-Test Collection API provides three endpoints for querying collections of ordinals based on their current color. Each request fetches a paginated list of ordinals for a specified color, including details like `blockheight` and `thumbnail_url` for easy visual integration.
 
 **Endpoints:**
 - Red Collection: `https://collection.color-test.pizzapets.fun/red`
 - Green Collection: `https://collection.color-test.pizzapets.fun/green`
 - Blue Collection: `https://collection.color-test.pizzapets.fun/blue`
+
+#### Query Parameters
+
+- **page** (optional): Specifies the page number of results to retrieve. If omitted, defaults to page `1`.
+
+**Examples:**
+- First page (default): `https://collection.color-test.pizzapets.fun/red`
+- Second page: `https://collection.color-test.pizzapets.fun/red?page=2`
 
 #### Request Headers
 All requests to the Color-Test API require the following headers:
@@ -36,9 +44,20 @@ All requests to the Color-Test API require the following headers:
 
 #### Example `curl` Requests
 ```bash
-curl -H "authorization: Bearer [Partner API Key]" -H "content-type: application/json" https://collection.color-test.pizzapets.fun/red
-curl -H "authorization: Bearer [Partner API Key]" -H "content-type: application/json" https://collection.color-test.pizzapets.fun/green
-curl -H "authorization: Bearer [Partner API Key]" -H "content-type: application/json" https://collection.color-test.pizzapets.fun/blue
+# Fetch the first page of the red collection
+curl -H "authorization: Bearer [Partner API Key]" \
+     -H "content-type: application/json" \
+     https://collection.color-test.pizzapets.fun/red
+
+# Fetch the second page of the green collection
+curl -H "authorization: Bearer [Partner API Key]" \
+     -H "content-type: application/json" \
+     https://collection.color-test.pizzapets.fun/green?page=2
+
+# Fetch the third page of the blue collection
+curl -H "authorization: Bearer [Partner API Key]" \
+     -H "content-type: application/json" \
+     https://collection.color-test.pizzapets.fun/blue?page=3
 ```
 
 ### API Response Structure
@@ -46,82 +65,115 @@ curl -H "authorization: Bearer [Partner API Key]" -H "content-type: application/
 Each request will return a paginated JSON response with the following structure:
 
 - **blockheight** (string): The latest block height at which this collection was evaluated.
-- **items** (array): An array of ordinals, each with:
+- **items** (array): An array of ordinals for the requested page, each with:
   - **id** (string): Unique ID of the ordinal.
   - **thumbnail_url** (string): URL to the thumbnail image for the ordinal’s color.
 - **last_page** (boolean): Indicates if this is the final page of results.
 
-#### Sample Response for `Red` Collection
+#### Sample Response for `Green` Collection
 ```json
 {
-  "blockheight": "123",
+  "blockheight": "833366",
   "items": [
     {
-      "id": "a4a8c57a5e6c8eff87740d288f7c2f0689c569190887a5a94b7a77c67b27ac09i0",
-      "thumbnail_url": "https://me-color-test.s3.us-west-2.amazonaws.com/red.png"
-    },
-    {
-      "id": "1debbc8179a4fc8e5a46d9c99919c08a5085c8962e96771b31499b6443c199eai0",
-      "thumbnail_url": "https://me-color-test.s3.us-west-2.amazonaws.com/red.png"
-    },
+      "id": "c2ca06403da760bb405c8bf4aa77f7a03a246d9b2b45eeb00e59d3a86ac90fb6i0",
+      "thumbnail_url": "https://me-color-test.s3.us-west-2.amazonaws.com/green.png"
+    }
     // Additional ordinals...
   ],
-  "last_page": false
+  "last_page": true
 }
 ```
+
+### Pagination
+
+To retrieve all ordinals in a collection, you may need to paginate through multiple pages. Use the `page` query parameter to specify the page number. Continue fetching pages until the `last_page` field in the response is `true`.
+
+**Example Workflow:**
+1. Start by requesting the first page (default or `?page=1`).
+2. Check the `last_page` field in the response:
+   - If `false`, increment the `page` parameter and request the next page.
+   - If `true`, you have reached the end of the collection.
 
 ## Workflow Summary
 
 To ensure collections remain synchronized with the latest ordinal colors, marketplaces should adhere to the following workflow:
 
 1. **Detect New Block**: When a new block is detected, note the updated block height.
-2. **Invoke the Collection API**: Query the Collection API endpoint for each color (`red`, `green`, `blue`) and confirm that the `blockheight` matches the latest block height.
+2. **Invoke the Collection API**: Query the Collection API endpoint for each color (`red`, `green`, `blue`), handling pagination as needed, and confirm that the `blockheight` matches the latest block height.
 3. **Update Collections**: Update the displayed collections based on the API responses for each color, ensuring users see the most recent ordinal states.
 
 ## Sample Code for Integration
 
 ### `curl` Requests
+
 For basic integration and testing, you can use these sample `curl` commands to fetch each collection:
 
 ```bash
-curl -H "authorization: Bearer [Partner API Key]" -H "content-type: application/json" https://collection.color-test.pizzapets.fun/red
-curl -H "authorization: Bearer [Partner API Key]" -H "content-type: application/json" https://collection.color-test.pizzapets.fun/green
-curl -H "authorization: Bearer [Partner API Key]" -H "content-type: application/json" https://collection.color-test.pizzapets.fun/blue
+# Fetch the first page of the red collection
+curl -H "authorization: Bearer [Partner API Key]" \
+     -H "content-type: application/json" \
+     https://collection.color-test.pizzapets.fun/red
+
+# Fetch the second page of the red collection
+curl -H "authorization: Bearer [Partner API Key]" \
+     -H "content-type: application/json" \
+     https://collection.color-test.pizzapets.fun/red?page=2
+
+# Fetch the first page of the green collection
+curl -H "authorization: Bearer [Partner API Key]" \
+     -H "content-type: application/json" \
+     https://collection.color-test.pizzapets.fun/green
 ```
 
-### JavaScript Example for Fetching Collections
+### JavaScript Example for Fetching Collections with Pagination
 
-The following JavaScript function demonstrates how to query the Collection API for a specified color:
+The following JavaScript function demonstrates how to query the Collection API for a specified color, handling pagination:
 
 ```javascript
 async function fetchCollection(color) {
-  const apiKey = '[Partner API Key]';  // Replace with actual API Key
-  const response = await fetch(`https://collection.color-test.pizzapets.fun/${color}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
-    }
-  });
+  const apiKey = '[Partner API Key]';  // Replace with your actual API Key
+  let page = 1;
+  let lastPage = false;
+  const allItems = [];
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch collection for ${color}: ${response.statusText}`);
+  while (!lastPage) {
+    const response = await fetch(`https://collection.color-test.pizzapets.fun/${color}?page=${page}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch collection for ${color}, page ${page}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    allItems.push(...data.items);
+    lastPage = data.last_page;
+    page += 1;
   }
 
-  const data = await response.json();
-  console.log(data);
-  return data;
+  console.log(`Fetched ${allItems.length} items for color ${color}.`);
+  return allItems;
 }
 
 // Fetch example
 fetchCollection('red')
-  .then(data => console.log('Red Collection:', data))
+  .then(items => console.log('Red Collection Items:', items))
   .catch(err => console.error(err));
 ```
 
 ### Notes
-- **Error Handling**: Implement error handling for cases where the response might not be `200 OK`.
-- **Pagination**: If `last_page` is `false`, implement pagination to retrieve additional pages if necessary.
 
+- **Error Handling**: Implement robust error handling to manage cases where the response might not be `200 OK`. This includes handling network errors, invalid responses, and rate limits.
+- **Pagination**: Always check the `last_page` field in the response to determine if more pages are available. Adjust your loop or recursion accordingly.
+- **Rate Limiting**: Be mindful of potential rate limits on the API. Implement backoff strategies if necessary.
 
-Documentation for the production Pizza Pets Collection API will be completed soon.
+## Conclusion
+
+By incorporating pagination into your API requests, you can efficiently retrieve all ordinals for each color, ensuring your marketplace displays up-to-date collections in sync with the latest Bitcoin block. Remember to monitor for new blocks and update your collections accordingly.
+
+**Note**: Documentation for the production Pizza Pets Collection API will be completed soon.
