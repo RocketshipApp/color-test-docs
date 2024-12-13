@@ -210,7 +210,7 @@ If you would like to perform your own calculations for the thumbnail paths, with
 <body>
 <script type="module">
   // Parameterized inputs
-  const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets/';
+  const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets';
   const ORDINALS_HOST = 'https://cdn-regtest.app.pizzapets.fun'; // regtest
   const ORD_CLIENT_INSCRIPTION_ID = 'f09ca1c5104ef596359999a7cbc610629e49ac77bd78e623d595828d0bdc13f2i0'; // ord-client.js (regtest)
   const PIZZA_PET_INSCRIPTION_ID = 'dbafa678ab6f45a0b8895509ebafbb2a803551d82bd955c6fdf93299a984759di0'; // pizza-pet.js (regtest)
@@ -241,7 +241,9 @@ If you would like to perform your own calculations for the thumbnail paths, with
 
     const alive = pet.isAlive();
     const thumbHash = await pet.thumbnailHash();
-    const thumbnailURL = THUMBNAIL_BUCKET + thumbHash + '.png';
+
+    // EX: https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png
+    const thumbnailURL = `${THUMBNAIL_BUCKET}/${inscriptionId}/pet_${thumbHash}.png'`;
 
     console.log('Alive:', alive);
     console.log('Thumbnail Hash:', thumbHash);
@@ -261,7 +263,7 @@ import fetch from 'node-fetch';
 global.fetch = fetch; // ensure fetch is available if needed
 
 // Parameterized inputs
-const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets/';
+const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets';
 const ORDINALS_HOST = 'https://cdn-regtest.app.pizzapets.fun'; // regtest
 // These would normally be used to dynamically import code, but here we assume we've imported OrdClient and PizzaPet directly.
 // ORD_CLIENT_INSCRIPTION_ID = 'f09ca1c5104ef596359999a7cbc610629e49ac77bd78e623d595828d0bdc13f2i0'
@@ -287,7 +289,9 @@ const ORDINALS_HOST = 'https://cdn-regtest.app.pizzapets.fun'; // regtest
 
   const alive = pet.isAlive();
   const thumbHash = await pet.thumbnailHash();
-  const thumbnailURL = THUMBNAIL_BUCKET + thumbHash + '.png';
+
+  // EX: https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png
+  const thumbnailURL = `${THUMBNAIL_BUCKET}/${inscriptionId}/pet_${thumbHash}.png'`;
 
   console.log('Alive:', alive);
   console.log('Thumbnail Hash:', thumbHash);
