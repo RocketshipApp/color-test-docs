@@ -10,24 +10,30 @@ The **Pizza Pets Collection API** provides a real-time endpoint for Ordinals Mar
 
 ## Endpoint
 **Base URL**:  
-`https://collection.pizzapets.fun/`
+`https://collection.api.pizzapets.fun/`
 
 **Available Path**:  
 - **GET `/`**: Retrieves a paginated list of currently alive Pizza Pets for the latest `blockheight`.
 
 **Example Requests**:
-- First page (default): `https://collection.pizzapets.fun/`
-- Second page: `https://collection.pizzapets.fun/?page=2`
+- First page (default): `https://collection.api.pizzapets.fun/`
+- Second page: `https://collection.api.pizzapets.fun/?page=2`
 
 ### Query Parameters
 - **page** (optional): Page number for pagination. Defaults to `1` if omitted.
-- **magicEden** (optional): A marketplace-specific flag.  
-  - If not present, normal metadata is returned.  
-  - If present without a value (e.g. `?magicEden`), simplified metadata is returned suitable for Magic Eden.  
-  - If `?magicEden=true` or `?magicEden=false` is specified, the metadata format is still chosen based on the presence of the parameter, with the provided value potentially used to toggle marketplace-specific features.
+- **magicEden** (optional): A marketplace-specific flag.
+  - If not present, normal metadata is returned.
+  - If present without a value (e.g. `?magicEden`), simplified metadata is returned suitable for Magic Eden.
+  - If `?magicEden=true` or `?magicEden=false` is specified, the metadata format is still chosen based on the presence of the parameter.
 
 **Marketplace-Specific Flags**:
 - `?magicEden`: When set, the API returns a `meta` object containing `name`, `high_res_img_url`, and `attributes` arrays, formatted for Magic Eden’s expected structure. Without `magicEden`, the API returns metadata fields inline, along with `thumbnail_url`.
+
+## Synchronization & Delay Expectations
+- The update process is designed to complete within approximately four minutes after a block is mined.
+- The process will only begin once internal Ordinal nodes are synchronized.
+- A 300-second debounce is in place, preventing multiple simultaneous syncs for rapidly mined blocks, which can introduce delays.
+- It is possible for a resync to occur, allowing previously removed pets to be reintroduced into the collection if conditions change.
 
 ## Request Headers
 - **Authorization**: A `Bearer` token unique to each partner (e.g., `Bearer [Partner API Key]`).
@@ -37,7 +43,7 @@ The **Pizza Pets Collection API** provides a real-time endpoint for Ordinals Mar
 ```bash
 curl -H "authorization: Bearer [Partner API Key]" \
      -H "content-type: application/json" \
-     https://collection.pizzapets.fun/
+     https://collection.api.pizzapets.fun/
 ```
 
 ## API Response Structure
@@ -46,7 +52,7 @@ Each response returns the current `blockheight` and a list of `items`. Only aliv
 **Fields**:
 - **blockheight** (string): The block at which this snapshot was computed.
 - **items** (array): An array of pets for the requested page.
-  - If `magicEden` is **not** used:
+  - Default:
     ```json
     {
       "id": "some-inscription-id",
@@ -55,16 +61,16 @@ Each response returns the current `blockheight` and a list of `items`. Only aliv
       "stageOfEvolution": "adult",
       "elementalType": "fire",
       "pineappleWeakness": "immune",
-      "thumbnail_url": "https://collection-assets/.../pet_xyz.png"
+      "thumbnail_url": "https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png"
     }
     ```
-  - If `magicEden` **is** used:
+  - With `magicEden`:
     ```json
     {
       "id": "some-inscription-id",
       "meta": {
         "name": "Pizza Pet #42",
-        "high_res_img_url": "https://collection-assets/.../pet_xyz.png",
+        "high_res_img_url": "https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png",
         "attributes": [
           { "trait_type": "heartsRemaining", "value": "3" },
           { "trait_type": "stageOfEvolution", "value": "adult" },
@@ -88,9 +94,8 @@ Each response returns the current `blockheight` and a list of `items`. Only aliv
       "stageOfEvolution": "baby",
       "elementalType": "water",
       "pineappleWeakness": "immune",
-      "thumbnail_url": "https://s3.amazonaws.com/.../pet_abc123.png"
+      "thumbnail_url": "https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png"
     }
-    // Additional pets...
   ],
   "last_page": false
 }
@@ -127,29 +132,34 @@ To retrieve all pets:
    - If `true`, you have retrieved all pets currently alive at that `blockheight`.
 
 **Example Pagination Workflow**:
-- Fetch: `https://collection.pizzapets.fun/`
-- If `last_page` is `false`, fetch `https://collection.pizzapets.fun/?page=2`, and so forth until `last_page` is `true`.
+- Fetch: `https://collection.api.pizzapets.fun/`
+- If `last_page` is `false`, fetch `https://collection.api.pizzapets.fun/?page=2`, and so forth until `last_page` is `true`.
 
 ## Comparing Blockheights for Updates
 Since the collection changes with every block:
 - Cache the `blockheight` from previous fetches.
-- Periodically (e.g., after detecting a new block in your system), fetch page `1` again.
-- If the `blockheight` is higher than the cached one, you have a new state of the collection. Refresh all pages from `1` onward until `last_page` is reached again.
+- Periodically fetch page `1` again after detecting new blocks.
+- If the `blockheight` is higher, refresh all pages until `last_page` is reached again.
+
+## Launch Milestones
+- Thursday 12/12 PM (Pre-Reveal)
+- Saturday 12/14 11:00am EST (Reveal)
+- Monday 12/15 11:00am EST (Egg Phase Transition)
+- Thursday 12/19 11:00am EST (First Death Cliff)
+
+The API can be used during pre-reveal phases and transitions to monitor the collection’s evolving state. By observing changes in `thumbnail_url` and other metadata, marketplaces can confirm synchronization and readiness. The time between Saturday 11:00am and Monday 11:00am (the egg phase) is especially useful for verifying that updates are reflected promptly. Synchronization should be stable before the first death cliff event, ensuring that the marketplace accurately displays the state of the collection.
 
 ## Marketplace-Specific Flags
-As mentioned, `?magicEden` changes the structure of `items` to include a `meta` object and standardized attributes suitable for Magic Eden. Other marketplaces can ignore this parameter or use their own query parameters as needed.
+Using `?magicEden` modifies the `items` structure to include standardized attributes for Magic Eden. Other marketplaces can ignore this parameter or use their own flags.
 
-**Example for Magic Eden Flag**:
+**Example**:
 ```bash
 curl -H "authorization: Bearer [Partner API Key]" \
      -H "content-type: application/json" \
-     https://collection.pizzapets.fun/?magicEden
+     https://collection.api.pizzapets.fun/?magicEden
 ```
-This returns the `meta` object structure described above.
 
 ## Retrieving All Metadata (POC Code Snippet)
-Here’s a sample JavaScript snippet to paginate through all results at the current blockheight, capturing all pets:
-
 ```javascript
 async function fetchAllPets(magicEden = false) {
   const apiKey = '[Partner API Key]';
@@ -158,7 +168,7 @@ async function fetchAllPets(magicEden = false) {
   const allItems = [];
 
   while (!lastPage) {
-    const url = `https://collection.pizzapets.fun/?page=${page}${magicEden ? '&magicEden' : ''}`;
+    const url = `https://collection.api.pizzapets.fun/?page=${page}${magicEden ? '&magicEden' : ''}`;
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -181,19 +191,18 @@ async function fetchAllPets(magicEden = false) {
   return allItems;
 }
 
-// Example usage:
+// Usage examples:
 fetchAllPets().then(pets => console.log('All Pets:', pets));
 fetchAllPets(true).then(magicEdenPets => console.log('All Pets (Magic Eden):', magicEdenPets));
 ```
 
 ## Computing Image Paths Manually
-**TBD**  
-(Details on how to manually construct image URLs, if needed, will be provided in a future update.)
+**TBD**
 
 ## Notes
-- **Error Handling**: Check HTTP statuses and handle networking issues gracefully.
-- **Rate Limits**: Be mindful of potential rate limits and implement backoff strategies if necessary.
-- **Future Updates**: Additional endpoints or parameters may be introduced as Pizza Pets evolve from POC to production.
+- **Error Handling**: Check HTTP statuses and handle errors gracefully.
+- **Rate Limits**: Be mindful of potential rate limits and implement backoff strategies.
+- **Future Updates**: Additional endpoints or parameters may be introduced over time.
 
 ## Conclusion
 Integrate the Pizza Pets Collection API to dynamically display evolving collections that respond to Bitcoin block events. By monitoring `blockheight` and handling pagination, you ensure that your marketplace remains synchronized with the latest state of the Pizza Pets ecosystem.
