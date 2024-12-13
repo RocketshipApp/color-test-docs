@@ -1,6 +1,6 @@
 # Pizza Pets & Color-Test Collection APIs
 
-Welcome to the repository for the **Pizza Pets** and **Color-Test** collection APIs, which demonstrate dynamic and evolving NFT-like Ordinal collections. These systems are part of a research and development effort behind the **[Pizza Pets](https://pizzapets.fun)** game, where in-game pets evolve over time based on Bitcoin block events.
+Welcome to the repository for the **Pizza Pets** and **Color-Test** collection APIs, which demonstrate dynamic and evolving Ordinal collections. These systems are part of a research and development effort behind the **[Pizza Pets](https://pizzapets.fun)** game, where in-game pets evolve over time based on Bitcoin block events.
 
 ## Overview
 

@@ -175,5 +175,3 @@ fetchCollection('red')
 ## Conclusion
 
 By incorporating pagination into your API requests, you can efficiently retrieve all ordinals for each color, ensuring your marketplace displays up-to-date collections in sync with the latest Bitcoin block. Remember to monitor for new blocks and update your collections accordingly.
-
-**Note**: Documentation for the production Pizza Pets Collection API will be completed soon.

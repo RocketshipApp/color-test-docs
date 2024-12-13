@@ -1,6 +1,5 @@
 # Pizza Pets Collection API Documentation
 
-```
 ## Overview
 The **Pizza Pets Collection API** provides a real-time endpoint for Ordinals Marketplaces to retrieve the current state of a single dynamic collection of Bitcoin Ordinals known as **Pizza Pets**. With each new Bitcoin block, the state of these pets is recalculated—some pets evolve, and others may die. Dead pets are removed from the collection and no longer appear in the API results.
 
@@ -77,7 +76,7 @@ Each response returns the current `blockheight` and a list of `items`. Only aliv
     ```
 - **last_page** (boolean): `true` if this is the final page of results.
 
-**Sample Response (Normal)**
+**Sample Response (Normal)**:
 ```json
 {
   "blockheight": "833800",
@@ -97,7 +96,7 @@ Each response returns the current `blockheight` and a list of `items`. Only aliv
 }
 ```
 
-**Sample Response (with `magicEden`)**
+**Sample Response (with `magicEden`)**:
 ```json
 {
   "blockheight": "833800",
@@ -140,7 +139,7 @@ Since the collection changes with every block:
 ## Marketplace-Specific Flags
 As mentioned, `?magicEden` changes the structure of `items` to include a `meta` object and standardized attributes suitable for Magic Eden. Other marketplaces can ignore this parameter or use their own query parameters as needed.
 
-**Example for Magic Eden Flag:**
+**Example for Magic Eden Flag**:
 ```bash
 curl -H "authorization: Bearer [Partner API Key]" \
      -H "content-type: application/json" \
@@ -188,9 +187,8 @@ fetchAllPets(true).then(magicEdenPets => console.log('All Pets (Magic Eden):', m
 ```
 
 ## Computing Image Paths Manually
-**TBD**
-
-(Details on how to manually construct image URLs, if needed, will be provided here in a future update.)
+**TBD**  
+(Details on how to manually construct image URLs, if needed, will be provided in a future update.)
 
 ## Notes
 - **Error Handling**: Check HTTP statuses and handle networking issues gracefully.
@@ -199,4 +197,3 @@ fetchAllPets(true).then(magicEdenPets => console.log('All Pets (Magic Eden):', m
 
 ## Conclusion
 Integrate the Pizza Pets Collection API to dynamically display evolving collections that respond to Bitcoin block events. By monitoring `blockheight` and handling pagination, you ensure that your marketplace remains synchronized with the latest state of the Pizza Pets ecosystem.
-```
