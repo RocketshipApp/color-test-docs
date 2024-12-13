@@ -110,7 +110,7 @@ Each response returns the current `blockheight` and a list of `items`. Only aliv
       "id": "ceed87ed12d755fca49b3a62cfe1be302d65863b2cda9bf1ffa8cd9d3745e100i0",
       "meta": {
         "name": "Pizza Pet #1",
-        "high_res_img_url": "https://s3.amazonaws.com/.../pet_abc123.png",
+        "high_res_img_url": "https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png",
         "attributes": [
           { "trait_type": "heartsRemaining", "value": "3" },
           { "trait_type": "stageOfEvolution", "value": "baby" },
@@ -197,7 +197,103 @@ fetchAllPets(true).then(magicEdenPets => console.log('All Pets (Magic Eden):', m
 ```
 
 ## Computing Image Paths Manually
-**TBD**
+
+If you would like to perform your own calculations for the thumbnail paths, without relying on our collection API, you can do so by directly simulating the pet using the latest version of the ordinals code. URLs and Inscription Ids are subject to change prior to launch of the game.
+
+```html
+<!-- index.html (Browser Version) -->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Compute Pizza Pet Thumbnail Path</title>
+</head>
+<body>
+<script type="module">
+  // Parameterized inputs
+  const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets/';
+  const ORDINALS_HOST = 'https://cdn-regtest.app.pizzapets.fun'; // regtest
+  const ORD_CLIENT_INSCRIPTION_ID = 'f09ca1c5104ef596359999a7cbc610629e49ac77bd78e623d595828d0bdc13f2i0'; // ord-client.js (regtest)
+  const PIZZA_PET_INSCRIPTION_ID = 'dbafa678ab6f45a0b8895509ebafbb2a803551d82bd955c6fdf93299a984759di0'; // pizza-pet.js (regtest)
+
+  // Dynamically load OrdClient and PizzaPet from the Ordinals host
+  async function loadModules() {
+    const [ordClientModule, pizzaPetModule] = await Promise.all([
+      import(`${ORDINALS_HOST}/content/${ORD_CLIENT_INSCRIPTION_ID}`),
+      import(`${ORDINALS_HOST}/content/${PIZZA_PET_INSCRIPTION_ID}`)
+    ]);
+    return { OrdClient: ordClientModule.OrdClient, PizzaPet: pizzaPetModule.PizzaPet };
+  }
+
+  (async () => {
+    const { OrdClient, PizzaPet } = await loadModules();
+    const ordClient = new OrdClient({
+      host: ORDINALS_HOST,
+      toJSON: (response) => response.json(),
+      fetchOptions: { headers: { 'Content-Type': 'application/json' } }
+    });
+
+    // Replace with a real inscription ID and blockheight for testing
+    const inscriptionId = 'SOME_INSCRIPTION_ID';
+    const blockheight = 900000; 
+
+    const pet = new PizzaPet(inscriptionId, ordClient, null);
+    await pet.update();
+
+    const alive = pet.isAlive();
+    const thumbHash = await pet.thumbnailHash();
+    const thumbnailURL = THUMBNAIL_BUCKET + thumbHash + '.png';
+
+    console.log('Alive:', alive);
+    console.log('Thumbnail Hash:', thumbHash);
+    console.log('Thumbnail URL:', thumbnailURL);
+  })();
+</script>
+</body>
+</html>
+```
+
+```javascript
+// Node.js Version (e.g., index.js)
+import { OrdClient } from './ord-client-regtest-v1.js';
+import { PizzaPet } from './pizza-pet-regtest-v1.js';
+import fetch from 'node-fetch';
+
+global.fetch = fetch; // ensure fetch is available if needed
+
+// Parameterized inputs
+const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets/';
+const ORDINALS_HOST = 'https://cdn-regtest.app.pizzapets.fun'; // regtest
+// These would normally be used to dynamically import code, but here we assume we've imported OrdClient and PizzaPet directly.
+// ORD_CLIENT_INSCRIPTION_ID = 'f09ca1c5104ef596359999a7cbc610629e49ac77bd78e623d595828d0bdc13f2i0'
+// PIZZA_PET_INSCRIPTION_ID = 'dbafa678ab6f45a0b8895509ebafbb2a803551d82bd955c6fdf93299a984759di0'
+
+(async () => {
+  const ordClient = new OrdClient({
+    host: ORDINALS_HOST,
+    toJSON: (response) => response.json(),
+    fetchOptions: {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+  });
+
+  // Replace with a real inscription ID and blockheight for testing
+  const inscriptionId = 'SOME_INSCRIPTION_ID';
+  const blockheight = 900000; 
+
+  const pet = new PizzaPet(inscriptionId, ordClient, null);
+  await pet.update();
+
+  const alive = pet.isAlive();
+  const thumbHash = await pet.thumbnailHash();
+  const thumbnailURL = THUMBNAIL_BUCKET + thumbHash + '.png';
+
+  console.log('Alive:', alive);
+  console.log('Thumbnail Hash:', thumbHash);
+  console.log('Thumbnail URL:', thumbnailURL);
+})();
+```
 
 ## Notes
 - **Error Handling**: Check HTTP statuses and handle errors gracefully.
