@@ -27,7 +27,7 @@ The **Pizza Pets Collection API** provides a real-time endpoint for Ordinals Mar
   - If `?magicEden=true` or `?magicEden=false` is specified, the metadata format is still chosen based on the presence of the parameter.
 
 **Marketplace-Specific Flags**:
-- `?magicEden`: When set, the API returns a `meta` object containing `name`, `high_res_img_url`, and `attributes` arrays, formatted for Magic Eden’s expected structure. Without `magicEden`, the API returns metadata fields inline, along with `thumbnail_url`.
+- `?magicEden`: When set, the API returns a `meta` object containing `name`, `collection_page_img_url`, and `attributes` arrays, formatted for Magic Eden’s expected structure. Without `magicEden`, the API returns metadata fields inline, along with `thumbnail_url`.
 
 ## Synchronization & Delay Expectations
 - The update process is designed to complete within approximately four minutes after a block is mined.
@@ -70,7 +70,7 @@ Each response returns the current `blockheight` and a list of `items`. Only aliv
       "id": "some-inscription-id",
       "meta": {
         "name": "Pizza Pet #42",
-        "high_res_img_url": "https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png",
+        "collection_page_img_url": "https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png",
         "attributes": [
           { "trait_type": "heartsRemaining", "value": "3" },
           { "trait_type": "stageOfEvolution", "value": "adult" },
@@ -110,7 +110,7 @@ Each response returns the current `blockheight` and a list of `items`. Only aliv
       "id": "ceed87ed12d755fca49b3a62cfe1be302d65863b2cda9bf1ffa8cd9d3745e100i0",
       "meta": {
         "name": "Pizza Pet #1",
-        "high_res_img_url": "https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png",
+        "collection_page_img_url": "https://thumbnails.api.pizzapets.fun/pizza-pets/[ord id]/pet_[thumbnailHash].png",
         "attributes": [
           { "trait_type": "heartsRemaining", "value": "3" },
           { "trait_type": "stageOfEvolution", "value": "baby" },
