@@ -211,9 +211,9 @@ If you would like to perform your own calculations for the thumbnail paths, with
 <script type="module">
   // Parameterized inputs
   const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets';
-  const ORDINALS_HOST = 'https://cdn-regtest.app.pizzapets.fun'; // regtest
-  const ORD_CLIENT_INSCRIPTION_ID = 'f09ca1c5104ef596359999a7cbc610629e49ac77bd78e623d595828d0bdc13f2i0'; // ord-client.js (regtest)
-  const PIZZA_PET_INSCRIPTION_ID = 'dbafa678ab6f45a0b8895509ebafbb2a803551d82bd955c6fdf93299a984759di0'; // pizza-pet.js (regtest)
+  const ORDINALS_HOST = 'https://cdn.app.pizzapets.fun'; // mainnet
+  const ORD_CLIENT_INSCRIPTION_ID = '5aa512a80659a7ec189ffd2cdf84af2614c898eec0605a86d0e813eef39c9452i0'; // ord-client.js (mainnet)
+  const PIZZA_PET_INSCRIPTION_ID = 'b65f707ba03ed19a04e6a8eb0bcf0ee43aea9757a60de1780372dd4b738bdb89i0'; // pizza-pet.js (mainnet)
 
   // Dynamically load OrdClient and PizzaPet from the Ordinals host
   async function loadModules() {
@@ -256,18 +256,18 @@ If you would like to perform your own calculations for the thumbnail paths, with
 
 ```javascript
 // Node.js Version (e.g., index.js)
-import { OrdClient } from './ord-client-regtest-v1.js';
-import { PizzaPet } from './pizza-pet-regtest-v1.js';
+import { OrdClient } from './ord-client-mainnet-v1.js';
+import { PizzaPet } from './pizza-pet-mainnet-v1.js';
 import fetch from 'node-fetch';
 
 global.fetch = fetch; // ensure fetch is available if needed
 
 // Parameterized inputs
 const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets';
-const ORDINALS_HOST = 'https://cdn-regtest.app.pizzapets.fun'; // regtest
+const ORDINALS_HOST = 'https://cdn.app.pizzapets.fun'; // mainnet
 // These would normally be used to dynamically import code, but here we assume we've imported OrdClient and PizzaPet directly.
-// ORD_CLIENT_INSCRIPTION_ID = 'f09ca1c5104ef596359999a7cbc610629e49ac77bd78e623d595828d0bdc13f2i0'
-// PIZZA_PET_INSCRIPTION_ID = 'dbafa678ab6f45a0b8895509ebafbb2a803551d82bd955c6fdf93299a984759di0'
+// ORD_CLIENT_INSCRIPTION_ID = '5aa512a80659a7ec189ffd2cdf84af2614c898eec0605a86d0e813eef39c9452i0'
+// PIZZA_PET_INSCRIPTION_ID = 'b65f707ba03ed19a04e6a8eb0bcf0ee43aea9757a60de1780372dd4b738bdb89i0'
 
 (async () => {
   const ordClient = new OrdClient({
