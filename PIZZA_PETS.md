@@ -256,8 +256,8 @@ If you would like to perform your own calculations for the thumbnail paths, with
 
 ```javascript
 // Node.js Version (e.g., index.js)
-import { OrdClient } from './ord-client-mainnet-v1.js';
-import { PizzaPet } from './pizza-pet-mainnet-v1.js';
+import { OrdClient } from './ord-client.js'; // Retrieve this from a live pet.
+import { PizzaPet } from './pizza-pet.js'; // Retrieve this from a live pet.
 import fetch from 'node-fetch';
 
 global.fetch = fetch; // ensure fetch is available if needed
@@ -265,6 +265,7 @@ global.fetch = fetch; // ensure fetch is available if needed
 // Parameterized inputs
 const THUMBNAIL_BUCKET = 'https://thumbnails.api.pizzapets.fun/pizza-pets';
 const ORDINALS_HOST = 'https://cdn.app.pizzapets.fun'; // mainnet
+
 // These would normally be used to dynamically import code, but here we assume we've imported OrdClient and PizzaPet directly.
 // ORD_CLIENT_INSCRIPTION_ID = '5aa512a80659a7ec189ffd2cdf84af2614c898eec0605a86d0e813eef39c9452i0'
 // PIZZA_PET_INSCRIPTION_ID = 'b65f707ba03ed19a04e6a8eb0bcf0ee43aea9757a60de1780372dd4b738bdb89i0'
