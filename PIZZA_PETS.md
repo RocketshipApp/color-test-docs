@@ -300,6 +300,13 @@ const ORDINALS_HOST = 'https://cdn.app.pizzapets.fun'; // mainnet
 })();
 ```
 
+
+## Computing Image Paths Manually
+
+If you would like to perform your own calculations for the alive status of your pet, without relying on our collection API, you can do so by directly simulating the pet using the latest version of the ordinals code.
+
+See [alive.html](./sample/alive.html) for demonstration code.
+
 ## Notes
 - **Error Handling**: Check HTTP statuses and handle errors gracefully.
 - **Rate Limits**: Be mindful of potential rate limits and implement backoff strategies.

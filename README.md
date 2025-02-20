@@ -21,6 +21,6 @@ Welcome to the repository for the **Pizza Pets** and **Color-Test** collection A
 ## Additional Resources
 
 - **Game Homepage**:  
-  Visit [Pizza Pets](https://pizzapets.fun) to learn more about the game’s vision, mechanics, and upcoming features.
+  Visit [Pizza Pets](https://www.pizzapets.fun) to learn more about the game’s vision, mechanics, and upcoming features.
 
 We hope these APIs and documentation help you integrate dynamic, block-height-driven collections into your marketplace or tooling. Stay tuned for more updates and improvements as Pizza Pets evolves from proof-of-concept into a full-fledged experience.

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pizza Pets - Alive Checker</title>
+    <link rel="icon" href="/favicon.png" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        font-family: sans-serif;
+        color: #ff690f;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="margin: 0 20px">
+      <h1>Alive Checker for Pizza Pets</h1>
+      <p>Edit <b>?inscription=</b> in the URL bar to change to a different pet.</p>
+      <p>Open DevTools Console for logs.</p>
+    </div>
+
+    <script type="module">
+      /*
+      Make sure the latest JS files (currently: ord-client-v2-0-0.js and pizza-pet-s1-v1-26-25.js)
+      are in the same directory as alive.html, or adjust paths accordingly.
+      */
+      import { OrdClient } from "./ord-client-v2-0-0.js";
+      import { PizzaPet } from "./pizza-pet-s1-v1-26-25.js";
+
+      // A simple fetchWithRetries function with random jitter
+      async function fetchWithRetries(url, options = {}, maxRetries = 3) {
+        let attempt = 0;
+        let lastError;
+        while (attempt < maxRetries) {
+          attempt++;
+          try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+              throw new Error(
+                `HTTP error ${response.status} - ${response.statusText}`
+              );
+            }
+            return response;
+          } catch (err) {
+            console.warn(`Fetch attempt #${attempt} failed:`, err);
+            lastError = err;
+            if (attempt < maxRetries) {
+              // Simple jittered delay: 600-1000 ms
+              const delayMs = 600 + Math.floor(Math.random() * 401);
+              await new Promise((res) => setTimeout(res, delayMs));
+            }
+          }
+        }
+        throw lastError;
+      }
+
+      // Main function
+      (async () => {
+        // Parse query params for inscription ID, e.g. ?inscription=<id>
+        const params = new URLSearchParams(window.location.search);
+        const inscriptionId = params.get("inscription");
+        if (!inscriptionId)
+          window.location = `${
+            window.location
+          }?inscription=d2755b1488c1fedad3d0d4a0a3305dd22a7f93551810448613510e5904fd791ai0`;
+
+        // OrdClient config
+        const ORDINALS_HOST = "https://cdn.app.pizzapets.fun";
+        const ordClient = new OrdClient({
+          host: ORDINALS_HOST,
+          toJSON: (response) => response.json(),
+          fetchMethod: (url, opts) => fetchWithRetries(url, opts),
+          fetchOptions: { headers: { "Content-Type": "application/json" } },
+        });
+
+        // 1. Fetch current blockheight from ORDINALS_HOST/blockheight
+        let blockheight;
+        try {
+          console.log("Fetching current blockheight...");
+          const res = await fetchWithRetries(`${ORDINALS_HOST}/blockheight`);
+          blockheight = await res.json();
+          console.log("Current blockheight:", blockheight);
+        } catch (err) {
+          console.error("Failed to fetch blockheight after 3 attempts.", err);
+          document.body.insertAdjacentHTML(
+            "beforeend",
+            `<p style="color:red;">Failed to fetch blockheight. Check console.</p>`
+          );
+          return;
+        }
+
+        // 2. Construct a PizzaPet
+        const pet = new PizzaPet(inscriptionId, ordClient);
+
+        // 3. Try up to 3 attempts to do pet.update(blockheight)
+        const maxAttempts = 3;
+        let success = false;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          try {
+            console.log(
+              `Calling pet.update() with blockheight=${blockheight}, attempt #${attempt}`
+            );
+            await pet.update(blockheight); // pass in the fetched blockheight
+            success = true;
+            break;
+          } catch (err) {
+            console.error(`pet.update() attempt #${attempt} failed`, err);
+            if (attempt < maxAttempts) {
+              // Jittered delay: 600-1000 ms
+              const delayMs = 600 + Math.floor(Math.random() * 401);
+              await new Promise((res) => setTimeout(res, delayMs));
+            }
+          }
+        }
+
+        if (!success) {
+          console.error("Failed to update pet after 3 attempts. Giving up.");
+          document.body.insertAdjacentHTML(
+            "beforeend",
+            `<p style="color:red; margin: 0 20px">Failed to update pet after 3 attempts!</p>`
+          );
+          return;
+        }
+
+        // 4. If we succeeded, check isAlive()
+        const alive = pet.isAlive();
+        console.log(`Pet with inscription ${inscriptionId} => isAlive?`, alive);
+
+        // 5. Display on page
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `<div style="margin: 0 20px">
+          <h2>Results</h2>
+          <ul>
+            <li>Blockheight: <strong>${blockheight}</strong></li>
+            <li>Inscription: <a href="https://app.pizzapets.fun/${inscriptionId}/" target="_blank"><strong>${inscriptionId}</strong></a></li>
+            <li>Alive? <strong>${alive ? "Yes" : "No"}</strong></li>
+          </ul>
+        </div>`
+        );
+      })();
+    </script>
+  </body>
+</html>
