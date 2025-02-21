@@ -18,7 +18,9 @@
   <body>
     <div style="margin: 0 20px">
       <h1>Alive Checker for Pizza Pets</h1>
-      <p>Edit <b>?inscription=</b> in the URL bar to change to a different pet.</p>
+      <p>
+        Edit <b>?inscription=</b> in the URL bar to change to a different pet.
+      </p>
       <p>Open DevTools Console for logs.</p>
     </div>
 
@@ -63,9 +65,7 @@
         const params = new URLSearchParams(window.location.search);
         const inscriptionId = params.get("inscription");
         if (!inscriptionId)
-          window.location = `${
-            window.location
-          }?inscription=d2755b1488c1fedad3d0d4a0a3305dd22a7f93551810448613510e5904fd791ai0`;
+          window.location = `${window.location}?inscription=d2755b1488c1fedad3d0d4a0a3305dd22a7f93551810448613510e5904fd791ai0`;
 
         // OrdClient config
         const ORDINALS_HOST = "https://cdn.app.pizzapets.fun";
@@ -80,7 +80,7 @@
         let blockheight;
         try {
           console.log("Fetching current blockheight...");
-          const res = await fetchWithRetries(`${ORDINALS_HOST}/blockheight`);
+          const res = await fetchWithRetries(`${ORDINALS_HOST}/r/blockheight`);
           blockheight = await res.json();
           console.log("Current blockheight:", blockheight);
         } catch (err) {
@@ -128,6 +128,9 @@
         // 4. If we succeeded, check isAlive()
         const alive = pet.isAlive();
         console.log(`Pet with inscription ${inscriptionId} => isAlive?`, alive);
+        console.log(
+          `Pet Details: health:${pet.health}, stage:${pet.state}, deathAt: ${pet.deathAt}`
+        );
 
         // 5. Display on page
         document.body.insertAdjacentHTML(

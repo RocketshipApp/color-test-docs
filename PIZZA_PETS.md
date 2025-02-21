@@ -301,7 +301,7 @@ const ORDINALS_HOST = 'https://cdn.app.pizzapets.fun'; // mainnet
 ```
 
 
-## Computing Image Paths Manually
+## Computing Pet Alive Status Manually
 
 If you would like to perform your own calculations for the alive status of your pet, without relying on our collection API, you can do so by directly simulating the pet using the latest version of the ordinals code.
 
