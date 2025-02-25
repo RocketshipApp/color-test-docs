@@ -72,7 +72,7 @@
         const ordClient = new OrdClient({
           host: ORDINALS_HOST,
           toJSON: (response) => response.json(),
-          fetchMethod: (url, opts) => fetchWithRetries(url, opts),
+          fetch: (url, opts) => fetchWithRetries(url, opts),
           fetchOptions: { headers: { "Content-Type": "application/json" } },
         });
 
