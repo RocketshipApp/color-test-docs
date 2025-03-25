@@ -1,0 +1,10 @@
+{
+  "name": "collection-api",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "scripts": {
+    "pizza-pet:index-collection": "node index.js"
+  },
+  "author": "@NiftyMike",
+  "license": "MIT"
+}
