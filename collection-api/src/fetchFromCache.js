@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
+export const FETCH_METRICS = { localCacheHit: 0, httpRequest: 0 };
+
 const CACHE_DIR = path.join(process.cwd(), 'cache/html'); // e.g. "./cache"
 if (!fs.existsSync(CACHE_DIR)) {
   fs.mkdirSync(CACHE_DIR, { recursive: true });
@@ -50,6 +52,7 @@ export async function fetchFromCache(urlOrRequest, options = {}, maxRetries = 3)
     // 1. Check local cache
     if (fs.existsSync(cacheFilePath)) {
       const cachedContent = fs.readFileSync(cacheFilePath, 'utf8');
+      FETCH_METRICS.localCacheHit++;
       return makeMockResponse(cachedContent, 200);
     }
   }
@@ -61,6 +64,7 @@ export async function fetchFromCache(urlOrRequest, options = {}, maxRetries = 3)
     attempt++;
     try {
       // We can pass the original Request object or re-construct a request from urlString, options
+      FETCH_METRICS.httpRequest++;
       const response = await fetch(urlString, options);
       if (!response.ok) {
         throw new Error(`HTTP error ${response.status} - ${response.statusText}`);

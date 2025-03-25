@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 
 const CACHE_DIR = path.join(process.cwd(), 'cache'); // e.g. "./cache"
 if (!fs.existsSync(CACHE_DIR)) {
