@@ -1,7 +1,9 @@
-// PizzaPetsCache.js
-
 import fs from 'fs';
-import path from 'path';
+
+const CACHE_DIR = path.join(process.cwd(), 'cache'); // e.g. "./cache"
+if (!fs.existsSync(CACHE_DIR)) {
+  fs.mkdirSync(CACHE_DIR, { recursive: true });
+}
 
 export default class PizzaPetsCache {
   constructor(cacheFilePath) {

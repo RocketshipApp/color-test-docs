@@ -1,13 +1,9 @@
-// CollectionIndexer.js
-
-import fetch from 'node-fetch'; // If Node < 18, else you can rely on global fetch
 import path from 'path';
-import { fileURLToPath } from 'url';
 
 import PizzaPetsCache from './PizzaPetsCache.js';
-// Import your OrdClient + PizzaPet from src folder
-import { OrdClient } from './src/ord-client-v2-0-0.js';
-import { PizzaPet } from './src/pizza-pet-s1-v1-26-25.js';
+import { OrdClient } from '../lib/ord-client-v2-0-0.js';
+import { PizzaPet } from '../lib/pizza-pet-s1-v1-26-25.js';
+import { fetchFromCache } from './fetchFromCache.js';
 
 const ORDINALS_HOST = 'https://cdn.app.pizzapets.fun';
 const MAX_ATTEMPTS = 3;
@@ -15,13 +11,13 @@ const MAX_ATTEMPTS = 3;
 export default class CollectionIndexer {
   constructor() {
     // The cache manager
-    this.cache = new PizzaPetsCache(path.resolve('./data/pizza-pets-cache.json'));
+    this.cache = new PizzaPetsCache(path.resolve('./cache/collection-cache.json'));
 
     // Create an OrdClient
     this.ordClient = new OrdClient({
       host: ORDINALS_HOST,
       toJSON: (response) => response.json(),
-      fetch: (url, opts) => this.fetchWithRetries(url, opts),
+      fetch: (url, opts) => fetchFromCache(url, opts),
       fetchOptions: { headers: { 'Content-Type': 'application/json' } },
     });
 
@@ -38,7 +34,7 @@ export default class CollectionIndexer {
   }
 
   // Process one chunk of inscription IDs
-  async processChunk(inscriptionIds) {
+  async processChunk(inscriptionIds, startingOrdinal) {
     // 1. Ensure we have a blockheight
     if (!this._blockheight) {
       this._blockheight = await this.getBlockheight();
@@ -46,14 +42,16 @@ export default class CollectionIndexer {
     }
 
     // 2. For each ID in the chunk, do the standard check
+    let ordinal = startingOrdinal;
     for (const inscriptionId of inscriptionIds) {
       console.log(`\nProcessing inscriptionId = ${inscriptionId} ...`);
-      await this.processInscriptionId(inscriptionId);
+      await this.processInscriptionId(inscriptionId, ordinal);
+      ordinal++;
     }
   }
 
   // The core logic for a single inscription
-  async processInscriptionId(inscriptionId) {
+  async processInscriptionId(inscriptionId, ordinal) {
     // We want up to 3 attempts to do pet.update(blockheight)
     let success = false;
     let pet;
@@ -109,10 +107,7 @@ export default class CollectionIndexer {
       prevHashArr.push(newPetHash);
     }
 
-    // If your PizzaPet can provide an "ordinal number" or we can just store `#???`
-    // For demonstration, let's store "Pizza Pet ???"
-    // (In your real code, you might get the ordinal # from a separate metadata fetch)
-    const name = `Pizza Pet (unknown #)`;
+    const name = `Pizza Pet #${ordinal}`;
 
     const metadata = {
       name,

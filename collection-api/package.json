@@ -1,10 +1,14 @@
 {
-  "name": "collection-api",
+  "name": "pizza-pets-collection-api",
   "version": "1.0.0",
-  "main": "src/main.js",
+  "type": "module",
   "scripts": {
-    "pizza-pet:index-collection": "node index.js"
+    "format": "prettier --write src/",
+    "pizza-pet:index-collection": "node src/main.js"
   },
   "author": "@NiftyMike",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.5.3"
+  }
 }
