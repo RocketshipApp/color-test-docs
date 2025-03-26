@@ -24,6 +24,8 @@ const partialSeedFile = 'pizza_pets_partial_25.json';
       process.exit(1);
     }
 
+    FETCH_METRICS.startTime = Date.now();
+
     const seedDataRaw = fs.readFileSync(seedFilePath, 'utf8');
     const seedIds = JSON.parse(seedDataRaw); // Array of inscription IDs
 
@@ -33,8 +35,8 @@ const partialSeedFile = 'pizza_pets_partial_25.json';
     // 4. Load existing cache from disk
     await indexer.loadCache(); // loads or initializes an empty cache in memory
 
-    // 5. Main loop in batches of 100
-    const BATCH_SIZE = 100;
+    // 5. Main loop in batches of 640
+    const BATCH_SIZE = 640;
     for (let i = startIndex; i < seedIds.length; i += BATCH_SIZE) {
       const chunk = seedIds.slice(i, i + BATCH_SIZE);
       console.log(`\n=== Processing chunk: [${i}..${i + chunk.length - 1}] ===`);
@@ -46,8 +48,11 @@ const partialSeedFile = 'pizza_pets_partial_25.json';
       await indexer.saveCache();
     }
 
+    FETCH_METRICS.endTime = Date.now();
+    FETCH_METRICS.elapsedSec = ((FETCH_METRICS.endTime - FETCH_METRICS.startTime) / 1000).toFixed(2);
+
     console.log(
-      `FETCH METRICS\n-------------------------------------------------\n  => Cache Hits: ${FETCH_METRICS.localCacheHit}\n  => Requests: ${FETCH_METRICS.httpRequest}`
+      `FETCH METRICS\n-------------------------------------------------\n  => Elapsed Time: ${FETCH_METRICS.elapsedSec}s\n  => Cache Hits: ${FETCH_METRICS.localCacheHit}\n  => Requests: ${FETCH_METRICS.httpRequest}`
     );
     console.log('\nAll done!');
   } catch (err) {

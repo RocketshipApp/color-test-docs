@@ -9,7 +9,10 @@ import { createHash } from 'crypto';
 const PIZZA_PETS_THUMBNAIL_URL = 'https://thumbnails.api.pizzapets.fun';
 const ORDINALS_HOST = 'https://cdn.app.pizzapets.fun';
 const MAX_ATTEMPTS = 3;
+
 const SILENT = true;
+const CONCURRENCY = 64;
+const IMMORTAL_BLOCK_DELAY = 7; // Set greater than zero to spread out immortal processing.
 
 export default class CollectionIndexer {
   constructor() {
@@ -29,27 +32,35 @@ export default class CollectionIndexer {
   }
 
   async loadCache() {
-    await this.cache.load();
-  }
-
-  async saveCache() {
-    await this.cache.save();
-  }
-
-  // Process one chunk of inscription IDs
-  async processChunk(inscriptionIds, startingOrdinal) {
     // 1. Ensure we have a blockheight
     if (!this._blockheight) {
       this._blockheight = await this.getBlockheight();
       console.log('Current blockheight:', this._blockheight);
     }
 
-    // 2. For each ID in the chunk, do the standard check
-    let ordinal = startingOrdinal;
-    for (const inscriptionId of inscriptionIds) {
-      if (!SILENT) console.log(`\nProcessing inscriptionId = ${inscriptionId} ...`);
-      await this.processInscriptionId(inscriptionId, ordinal);
-      ordinal++;
+    await this.cache.load();
+  }
+
+  async saveCache() {
+    await this.cache.save(this._blockheight);
+  }
+
+  // Process one chunk of inscription IDs
+  async processChunk(inscriptionIds, startingOrdinal) {
+    // 2. Create tasks for each inscription
+    //    Each task is a function that calls processInscriptionId.
+    const tasks = inscriptionIds.map((inscriptionId, idx) => {
+      return async () => {
+        await this.processInscriptionId(inscriptionId, startingOrdinal + idx);
+      };
+    });
+
+    // 3. Process them in parallel, but limited by CONCURRENCY
+    for (let i = 0; i < tasks.length; i += CONCURRENCY) {
+      // Slice out up to CONCURRENCY tasks
+      const slice = tasks.slice(i, i + CONCURRENCY);
+      // Run them in parallel
+      await Promise.all(slice.map((fn) => fn()));
     }
   }
 
@@ -66,8 +77,7 @@ export default class CollectionIndexer {
         skipReason = 'Pet already processed in block.';
       } else if (cacheEntry.isAlive === true) {
         if (cacheEntry.isImmortal === true) {
-          const immortalBlockDelay = 0; // Set greater than zero to spread out immortal processing.
-          const inBucket = this.isInImmortalBucket(inscriptionId, this._blockheight, immortalBlockDelay + 1);
+          const inBucket = this.isInImmortalBucket(inscriptionId, this._blockheight, IMMORTAL_BLOCK_DELAY + 1);
           if (!inBucket) {
             shouldEvaluatePet = false;
             skipReason = 'Immortal skipped due to block delay.';
@@ -80,7 +90,7 @@ export default class CollectionIndexer {
       }
     }
 
-    // Now go ahead and init cacheEntry.
+    // Now go ahead and init cacheEntry if needed.
     if (!cacheEntry) {
       cacheEntry = {}; // brand new
     }
@@ -111,14 +121,18 @@ export default class CollectionIndexer {
         console.error(`  Failed to update pet for ${inscriptionId} after 3 attempts.`);
 
         this.cache.set(inscriptionId, {
-          ...cacheEntry, // Be sure to preserve any data that was there previously.
+          ...cacheEntry, // preserve any data that was there previously
           id: inscriptionId,
-          isAlive: null, // wipe this out since we dont know.
+          isAlive: null, // wipe this out since we dont know
           lastError: `Failed update after 3 attempts on block ${this._blockheight}`,
           lastCheckAt: new Date().toISOString(),
         });
         return;
       }
+
+      // Update the lastCheck data.
+      cacheEntry.lastCheckBlockheight = this._blockheight;
+      cacheEntry.lastCheckAt = new Date().toISOString();
 
       // 4. If we succeeded, check .isAlive()
       const petIsAlive = pet.isAlive();
@@ -126,16 +140,18 @@ export default class CollectionIndexer {
       // We only add the new hash if it's different from the last known
       const thumbnailHash = petIsAlive ? await pet.thumbnailHash() : '<DEAD-PET-HASH>';
       const prevHashArr = Array.isArray(cacheEntry.thumbnailHashes) ? cacheEntry.thumbnailHashes : [];
+
       if (thumbnailHash && prevHashArr[prevHashArr.length - 1] !== thumbnailHash) {
         prevHashArr.push(thumbnailHash);
       }
 
       const numberOfChildInscriptions = Object.values(pet.children).reduce((sum, arr) => sum + arr.length, 0);
 
-      if (!SILENT)
+      if (!SILENT) {
         console.log(
           `  => isAlive? ${petIsAlive}\n  => thumbnailHash: ${thumbnailHash}\n  => timesFed: ${numberOfChildInscriptions}`
         );
+      }
 
       // Update the cache.
       cacheEntry.isAlive = petIsAlive;
@@ -144,7 +160,7 @@ export default class CollectionIndexer {
       cacheEntry.timesFed = numberOfChildInscriptions;
 
       const imageName = `pet_${thumbnailHash}.png`;
-      // ex: https://thumbnails.api.pizzapets.fun/pizza-pets/d2755b1488c1fedad3d0d4a0a3305dd22a7f93551810448613510e5904fd791ai1/pet_20c468ca7d0fa7b4c4eb80459cf60055b1ec82e3b694762e005d5e1b141bf12f.png
+      // ex: https://thumbnails.api.pizzapets.fun/pizza-pets/<inscriptionId>/pet_<hash>.png
       cacheEntry.thumbnail_url = `${PIZZA_PETS_THUMBNAIL_URL}/pizza-pets/${inscriptionId}/${imageName}`;
 
       const name = `Pizza Pet #${ordinal}`;
@@ -162,15 +178,15 @@ export default class CollectionIndexer {
 
       cacheEntry.metadata = metadata;
     } else {
-      if (!SILENT) console.log(`X -- Skipping evaulation. Reason: ${skipReason}`);
+      if (!SILENT) {
+        console.log(`X -- Skipping evaluation. Reason: ${skipReason}`);
+      }
     }
 
     // 6. Update the cache
     this.cache.set(inscriptionId, {
       ...cacheEntry,
       id: inscriptionId,
-      lastCheckBlockheight: this._blockheight,
-      lastCheckAt: new Date().toISOString(),
     });
   }
 

@@ -44,7 +44,7 @@ export default class PizzaPetsCache {
     }
   }
 
-  async save() {
+  async save(blockHeight) {
     // We'll produce an object with { order, data }
     // so it's easy for a human to parse.  The order array ensures
     // the ordering, while data is keyed by inscriptionId.
@@ -54,6 +54,7 @@ export default class PizzaPetsCache {
     // in the same shape for simplicity.
 
     const finalObj = {
+      blockHeight,
       order: this._cache.order,
       data: this._cache.data,
     };
