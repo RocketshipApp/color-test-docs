@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "format": "prettier --write src/",
-    "pizza-pet:index-collection": "node src/main.js"
+    "api:index-collection": "node src/main.js",
+    "api:status": "node src/apiStatus.js"
   },
   "author": "@NiftyMike",
   "license": "MIT",
