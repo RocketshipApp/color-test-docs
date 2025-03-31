@@ -1,0 +1,15 @@
+{
+  "name": "pizza-pets-collection-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write src/",
+    "api:index-collection": "node src/main.js",
+    "api:status": "node src/apiStatus.js"
+  },
+  "author": "@NiftyMike",
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.5.3"
+  }
+}
